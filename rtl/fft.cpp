@@ -130,7 +130,7 @@ int main(int argc, char**argv)
         std::cerr << "Opening dump file: " << tr_f << std::endl;
     }
 
-    const std::int64_t fft_len = tb->fft->get_len();
+    const std::int64_t fft_len = tb->fft->get_fft_len();
     const std::int64_t iw      = tb->fft->get_inw();
     const std::int64_t ow      = tb->fft->get_outw();
 
@@ -153,10 +153,10 @@ int main(int argc, char**argv)
 
 
     std::cerr << "FFT Test. Setup:" << "\n"
-              << "\tInW:               " << iw      << "\n"
-              << "\tOutW:              " << ow      << "\n"
-              << "\tLen:               " << fft_len << "\n"
-              << "\tStages:            " << stages  << "\n"
+              << "\tFFT_Len:           " << fft_len << "\n"
+              << "\tFFT_Stages:        " << stages  << "\n"
+              << "\tIn_Bits:           " << iw      << "\n"
+              << "\tOut_Bits:          " << ow      << "\n"
               << "\tMax Allowed Error: " << max_err << "\n" << std::flush;
 
     std::deque<std::pair<double,double>> results;

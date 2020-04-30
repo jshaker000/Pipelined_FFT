@@ -4,11 +4,11 @@
 
 `default_nettype none
 module fft #(
-  parameter  IN_W   =  12,
-  parameter  LEN    =  256,
-  localparam STAGES =  $clog2(LEN),
-  localparam INT_W  =  IN_W + STAGES,
-  parameter  OUT_W  =  INT_W
+  parameter  IN_W    =  12,
+  parameter  FFT_LEN =  256,
+  localparam STAGES  =  $clog2(FFT_LEN),
+  localparam INT_W   =  IN_W + STAGES,
+  parameter  OUT_W   =  INT_W
 ) (
   input wire                     mclk,
   input wire                     i_init,
@@ -103,7 +103,7 @@ module fft #(
 
   bit_dereverse #(
     .DATA_W(2*OUT_W),
-    .DEPTH (LEN)
+    .DEPTH (FFT_LEN)
   ) inst_bit_dereverse (
     .mclk  (mclk),
     .i_init(init),
@@ -128,9 +128,9 @@ module fft #(
       // verilator public
       get_outw = OUT_W;
     endfunction
-    function integer get_len;
+    function integer get_fft_len;
       // verilator public
-      get_len = LEN;
+      get_fft_len = FFT_LEN;
     endfunction
   `endif
 

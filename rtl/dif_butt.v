@@ -51,10 +51,15 @@ module dif_butt
   reg signed [IN_W+1-1:0] diffI;
   reg signed [IN_W+1-1:0] diffQ;
 
-  always @(posedge mclk) sumI  <= pipe_in_valid[0] & ~init_r ? lI_r + rI_r : sumI;
-  always @(posedge mclk) sumQ  <= pipe_in_valid[0] & ~init_r ? lQ_r + rQ_r : sumQ;
-  always @(posedge mclk) diffI <= pipe_in_valid[0] & ~init_r ? lI_r - rI_r : diffI;
-  always @(posedge mclk) diffQ <= pipe_in_valid[0] & ~init_r ? lQ_r - rQ_r : diffQ;
+  wire signed [IN_W+1-1:0] sumI_e1  = lI_r + rI_r;
+  wire signed [IN_W+1-1:0] sumQ_e1  = lQ_r + rQ_r;
+  wire signed [IN_W+1-1:0] diffI_e1 = lI_r - rI_r;
+  wire signed [IN_W+1-1:0] diffQ_e1 = lQ_r - rQ_r;
+
+  always @(posedge mclk) sumI  <= pipe_in_valid[0] & ~init_r ? sumI_e1  : sumI;
+  always @(posedge mclk) sumQ  <= pipe_in_valid[0] & ~init_r ? sumQ_e1  : sumQ;
+  always @(posedge mclk) diffI <= pipe_in_valid[0] & ~init_r ? diffI_e1 : diffI;
+  always @(posedge mclk) diffQ <= pipe_in_valid[0] & ~init_r ? diffQ_e1 : diffQ;
 
   wire signed [IN_W+1+4+TWID_W-1:0] twiddOutLI;
   wire signed [IN_W+1+4+TWID_W-1:0] twiddOutLQ;
@@ -77,8 +82,8 @@ module dif_butt
     end
     'd4: begin: quarter_twiddle
       reg   twidd_count = 1'b0;
-      always @(posedge mclk) twidd_count <= init_r        ? 1'b0 :
-                                            twidd_count ^ pipe_in_valid[IN_PIPE_STG-1];
+      always @(posedge mclk) twidd_count <= init_r ? 1'b0 : twidd_count ^ pipe_in_valid[IN_PIPE_STG-1];
+
       reg signed [IN_W+1-1:0] twiddOutLIR;
       reg signed [IN_W+1-1:0] twiddOutLQR;
       reg signed [IN_W+1-1:0] twiddOutRIR;
@@ -114,13 +119,13 @@ module dif_butt
       localparam C_W = $clog2(STAGE_FFT_LEN) - 1;
 
       reg  [C_W-1:0] twidd_count = {C_W{1'b0}};
-      wire [C_W-1:0] twidd_addr  = twidd_count + {{C_W{1'b0}}, pipe_in_valid[IN_PIPE_STG-2]};
+      wire [C_W-1:0] twidd_addr  = twidd_count + {{C_W-1{1'b0}}, pipe_in_valid[IN_PIPE_STG-2]};
 
       always @(posedge mclk) twidd_count <= init_r ? {C_W{1'b0}} : twidd_addr;
 
       reg signed [IN_W+2-1:0] diffSum;
 
-      always @(posedge mclk)  diffSum <= ~init_r & pipe_in_valid[IN_PIPE_STG-2] ? (lI_r - rI_r) + (lQ_r - rQ_r) : diffSum;
+      always @(posedge mclk)  diffSum <= ~init_r & pipe_in_valid[IN_PIPE_STG-2] ? diffI_e1 + diffQ_e1 : diffSum;
 
       wire signed [TWID_W-1:0] twiddI;
       wire signed [TWID_W-1:0] twiddQ;
@@ -160,27 +165,35 @@ module dif_butt
       always @(posedge mclk)  twiddOutLIR    <= vld1 & ~init_r ? sumI_d1 : twiddOutLIR;
       always @(posedge mclk)  twiddOutLQR    <= vld1 & ~init_r ? sumQ_d1 : twiddOutLQR;
       always @(posedge mclk)  twiddOutValidR <= vld1 & ~init_r;
+
       localparam BITS_TO_CHOP = 6;
-      reg signed  [IN_W+1+4+TWID_W-1:0] twiddOutRIR;
-      reg signed  [IN_W+1+4+TWID_W-1:0] twiddOutRQR;
-      wire signed [IN_W+1+4+TWID_W-1:0] r_real = s1 - s2;
-      wire signed [IN_W+1+4+TWID_W-1:0] r_imag = s3 - s1 - s2;
-      wire re_clip = ~init_r & vld1 & (&r_real[IN_W+1+4+TWID_W-1 -: BITS_TO_CHOP+1] ^ |r_real[IN_W+1+4+TWID_W-1 -: BITS_TO_CHOP+1]);
-      wire im_clip = ~init_r & vld1 & (&r_imag[IN_W+1+4+TWID_W-1 -: BITS_TO_CHOP+1] ^ |r_imag[IN_W+1+4+TWID_W-1 -: BITS_TO_CHOP+1]);
+
+      reg signed  [IN_W+1+4+TWID_W-BITS_TO_CHOP-1:0] twiddOutRIR;
+      reg signed  [IN_W+1+4+TWID_W-BITS_TO_CHOP-1:0] twiddOutRQR;
+
+      wire signed [IN_W+1+4+TWID_W-1:0] twiddOutRIR_e1 = s1 - s2;
+      wire signed [IN_W+1+4+TWID_W-1:0] twiddOutRQR_e1 = s3 - s1 - s2;
+
+      wire twiddI_clip = ~init_r & vld1 & (&twiddOutRIR_e1[IN_W+1+4+TWID_W-1 -: BITS_TO_CHOP+1] ^ |twiddOutRIR_e1[IN_W+1+4+TWID_W-1 -: BITS_TO_CHOP+1]);
+      wire twiddQ_clip = ~init_r & vld1 & (&twiddOutRQR_e1[IN_W+1+4+TWID_W-1 -: BITS_TO_CHOP+1] ^ |twiddOutRQR_e1[IN_W+1+4+TWID_W-1 -: BITS_TO_CHOP+1]);
+
+      wire twiddI_clip_val = $signed({twiddOutRIR_e1[IN_W+1+4+TWID_W-1], {IN_W+1+4+TWID_W-1-BITS_TO_CHOP{~twiddOutRIR_e1[IN_W+1+4+TWID_W-1]}}});
+      wire twiddQ_clip_val = $signed({twiddOutRQR_e1[IN_W+1+4+TWID_W-1], {IN_W+1+4+TWID_W-1-BITS_TO_CHOP{~twiddOutRQR_e1[IN_W+1+4+TWID_W-1]}}});
+
       always @(posedge mclk)  twiddOutRIR <= vld1 & ~init_r ?
-                                               re_clip ? $signed({{BITS_TO_CHOP+1{r_real[IN_W+1+4+TWID_W-1]}}, {IN_W+1+4+TWID_W-1-BITS_TO_CHOP{~r_real[IN_W+1+4+TWID_W-1]}}}) :
-                                               r_real <<< BITS_TO_CHOP :
+                                               twiddI_clip ? twiddI_clip_val :
+                                               $signed(twiddOutRIR_e1[IN_W+1+4+TWID_W-BITS_TO_CHOP-1:0]) :
                                              twiddOutRIR;
       always @(posedge mclk)  twiddOutRQR <= vld1 & ~init_r ?
-                                               im_clip ? $signed({{BITS_TO_CHOP+1{r_imag[IN_W+1+4+TWID_W-1]}}, {IN_W+1+4+TWID_W-1-BITS_TO_CHOP{~r_imag[IN_W+1+4+TWID_W-1]}}}) :
-                                               r_imag <<< BITS_TO_CHOP :
+                                               twiddQ_clip ? twiddQ_clip_val :
+                                               $signed(twiddOutRQR_e1[IN_W+1+4+TWID_W-BITS_TO_CHOP-1:0]) :
                                              twiddOutRIR;
-      always @(posedge mclk)  twiddOutClipR <= vld1 & ~init_r & (re_clip | im_clip);
+      always @(posedge mclk)  twiddOutClipR <= vld1 & ~init_r & (twiddI_clip | twiddQ_clip);
       // ------------ OUT -----------------------------
-      assign twiddOutLI    = {twiddOutLIR, {TWID_W+4{1'b0}}};
-      assign twiddOutLQ    = {twiddOutLQR, {TWID_W+4{1'b0}}};
-      assign twiddOutRI    = {twiddOutRIR};
-      assign twiddOutRQ    = {twiddOutRQR};
+      assign twiddOutLI    = $signed({twiddOutLIR, {TWID_W+4{1'b0}}});
+      assign twiddOutLQ    = $signed({twiddOutLQR, {TWID_W+4{1'b0}}});
+      assign twiddOutRI    = $signed({twiddOutRIR, {BITS_TO_CHOP{1'b0}}});
+      assign twiddOutRQ    = $signed({twiddOutRQR, {BITS_TO_CHOP{1'b0}}});
       assign twiddOutClip  = twiddOutClipR;
       assign twiddOutValid = twiddOutValidR;
     end
