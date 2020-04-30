@@ -4,11 +4,11 @@
 
 module dif_butt
 #(
-   parameter IN_W   = 10,
-   parameter OUT_W  = 10,
-   parameter TWID_W = IN_W + 4,
-   parameter STAGE  =  0,
+   parameter IN_W           = 10,
+   parameter OUT_W          = IN_W + 1,
+   parameter STAGE          = 0,
    parameter TOTAL_STAGES   = 8,
+   parameter TWID_W         = TOTAL_STAGES - STAGE >= 2 ? IN_W + 4 : 0,
    parameter IS_IFFT        = 1'b0,
    localparam STAGE_FFT_LEN = 2**(TOTAL_STAGES-STAGE)
 ) (
@@ -110,14 +110,21 @@ module dif_butt
       assign twiddOutClip  = 1'b0;
     end
     default: begin: full_twiddle
+      // STAGE 0, prefetch twiddles and setup for gauss algo
       localparam C_W = $clog2(STAGE_FFT_LEN) - 1;
+
       reg  [C_W-1:0] twidd_count = {C_W{1'b0}};
       wire [C_W-1:0] twidd_addr  = twidd_count + {{C_W{1'b0}}, pipe_in_valid[IN_PIPE_STG-2]};
-      always @(posedge mclk) twidd_count <= init_r                       ? {C_W{1'b0}} :
-                                            twidd_addr;
+
+      always @(posedge mclk) twidd_count <= init_r ? {C_W{1'b0}} : twidd_addr;
+
+      reg signed [IN_W+2-1:0] diffSum;
+
+      always @(posedge mclk)  diffSum <= ~init_r & pipe_in_valid[IN_PIPE_STG-2] ? (lI_r - rI_r) + (lQ_r - rQ_r) : diffSum;
 
       wire signed [TWID_W-1:0] twiddI;
       wire signed [TWID_W-1:0] twiddQ;
+      wire signed   [TWID_W:0] twiddSum;
 
       twiddle_rom    #(.IS_IFFT(IS_IFFT),
                        .OUT_W(TWID_W),
@@ -126,7 +133,8 @@ module dif_butt
         .mclk   (mclk),
         .i_addr (twidd_addr),
         .o_cos  (twiddI),
-        .o_sin  (twiddQ)
+        .o_sin  (twiddQ),
+        .o_sum  (twiddSum)
       );
 
       // ------------ STAGE 1 ----------------------
@@ -140,9 +148,9 @@ module dif_butt
       reg signed   [IN_W+1+TWID_W-1:0] s1;
       reg signed   [IN_W+1+TWID_W-1:0] s2;
       reg signed [IN_W+1+2+TWID_W-1:0] s3;
-      always @(posedge mclk) s1 <= pipe_in_valid[IN_PIPE_STG-1] & ~init_r ? diffI * twiddI : s1;
-      always @(posedge mclk) s2 <= pipe_in_valid[IN_PIPE_STG-1] & ~init_r ? diffQ * twiddQ : s2;
-      always @(posedge mclk) s3 <= pipe_in_valid[IN_PIPE_STG-1] & ~init_r ? (diffI + diffQ) * (twiddI + twiddQ) : s3;
+      always @(posedge mclk) s1 <= pipe_in_valid[IN_PIPE_STG-1] & ~init_r ? diffI   * twiddI   : s1;
+      always @(posedge mclk) s2 <= pipe_in_valid[IN_PIPE_STG-1] & ~init_r ? diffQ   * twiddQ   : s2;
+      always @(posedge mclk) s3 <= pipe_in_valid[IN_PIPE_STG-1] & ~init_r ? diffSum * twiddSum : s3;
       // ------------ STAGE 2 ----------------------
       // combine
       reg twiddOutValidR = 1'b0;
@@ -161,11 +169,11 @@ module dif_butt
       wire im_clip = ~init_r & vld1 & (&r_imag[IN_W+1+4+TWID_W-1 -: BITS_TO_CHOP+1] ^ |r_imag[IN_W+1+4+TWID_W-1 -: BITS_TO_CHOP+1]);
       always @(posedge mclk)  twiddOutRIR <= vld1 & ~init_r ?
                                                re_clip ? $signed({{BITS_TO_CHOP+1{r_real[IN_W+1+4+TWID_W-1]}}, {IN_W+1+4+TWID_W-1-BITS_TO_CHOP{~r_real[IN_W+1+4+TWID_W-1]}}}) :
-                                               r_real * (2**BITS_TO_CHOP) :
+                                               r_real <<< BITS_TO_CHOP :
                                              twiddOutRIR;
       always @(posedge mclk)  twiddOutRQR <= vld1 & ~init_r ?
                                                im_clip ? $signed({{BITS_TO_CHOP+1{r_imag[IN_W+1+4+TWID_W-1]}}, {IN_W+1+4+TWID_W-1-BITS_TO_CHOP{~r_imag[IN_W+1+4+TWID_W-1]}}}) :
-                                               r_imag * (2**BITS_TO_CHOP) :
+                                               r_imag <<< BITS_TO_CHOP :
                                              twiddOutRIR;
       always @(posedge mclk)  twiddOutClipR <= vld1 & ~init_r & (re_clip | im_clip);
       // ------------ OUT -----------------------------

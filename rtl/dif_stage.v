@@ -5,13 +5,13 @@
 
 module dif_stage
 #(
-  parameter IN_W   = 10,
-  parameter OUT_W  = 10,
-  parameter TWID_W = 16,
-  parameter STAGE  =  0,
-  parameter TOTAL_STAGES = 8,
+  parameter IN_W         = 10,
+  parameter OUT_W        = IN_W + 1,
+  parameter STAGE        =  0,
+  parameter TOTAL_STAGES =  8,
+  parameter TWID_W       = TOTAL_STAGES - STAGE >= 2 ? IN_W + 4 : 0,
   parameter IS_IFFT      = 1'b0,
-  localparam BUFF_DEPTH = 2**(TOTAL_STAGES-STAGE-1)
+  localparam BUFF_DEPTH  = 2**(TOTAL_STAGES-STAGE-1)
 ) (
   input wire                     mclk,
   input wire                     i_init,

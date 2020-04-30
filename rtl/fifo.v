@@ -141,15 +141,19 @@ module fifo #(
   end // if fifo_depth > 1
   endgenerate
 
-/*
+  `ifdef verilator
   always @(posedge i_clk) begin
-    assert (o_pop_error == 1'b0) else begin
-      $display("fifo pop error!");
-    end
-    assert (o_push_error == 1'b0) else begin
-      $display("fifo push error!");
-    end
+      assert (i_rst ? 1'b1 : ~o_pop_error) else
+      begin
+        $display("FIFO pop error!");
+        $fatal;
+      end
+      assert (i_rst ? 1'b1 : ~o_push_error) else
+      begin
+        $display("FIFO push error!");
+        $fatal;
+      end
   end
-*/
+  `endif
 
 endmodule

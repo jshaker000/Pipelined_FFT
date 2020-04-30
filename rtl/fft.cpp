@@ -18,6 +18,13 @@
 
 static constexpr double PI = 3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253;
 
+static std::int64_t main_time = 0;
+
+double sc_time_stamp()
+{
+    return main_time;
+}
+
 // real to signed
 static std::int64_t r2s(const double n)
 {
@@ -72,6 +79,7 @@ static std::string GetEnv(const std::string &var)
 static void tick(int tickcount, Vfft *tb,
                  VerilatedVcdC *tfp)
 {
+    main_time = 10 * tickcount;
     tb->eval();
     // log right before clock
     if (tfp != nullptr)
@@ -127,7 +135,7 @@ int main(int argc, char**argv)
     const std::int64_t ow      = tb->fft->get_outw();
 
     const std::int64_t mx_ampl = static_cast<std::int64_t>(std::pow(2, iw-1) - 1);
-    std::uniform_int_distribution<std::int64_t> dst_in(-mx_ampl/2, mx_ampl/2);
+    std::uniform_int_distribution<std::int64_t> dst_in(-mx_ampl/2.0, mx_ampl/2.0);
     std::uniform_real_distribution<double> dst_T (1, fft_len);
 
     const std::int64_t stages  = log2c(fft_len);

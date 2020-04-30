@@ -4,7 +4,7 @@
 
 `default_nettype none
 module fft #(
-  parameter  IN_W   =  20,
+  parameter  IN_W   =  12,
   parameter  LEN    =  256,
   localparam STAGES =  $clog2(LEN),
   localparam INT_W  =  IN_W + STAGES,
@@ -61,6 +61,14 @@ module fft #(
         .o_Q   (fft_iQ[i+1][ow-1:0]),
         .o_clip_strb(clip_strb[i])
       );
+      `ifdef verilator
+        always @(posedge mclk) begin
+          assert(init ? 1'b1 : ~clip_strb[i]) else begin
+            $display("FFT: DIF BUTT STG %d clipped!\n", i);
+            $fatal;
+          end
+        end
+      `endif
     end
   endgenerate
 

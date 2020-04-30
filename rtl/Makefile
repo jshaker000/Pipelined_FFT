@@ -4,7 +4,7 @@ FFT_LEN        ?= 256
 OBJ_DIR        := obj_dir
 CFLAGS         := -Wall -O3 --std=c++17
 LDLIBS         := -lfftw3
-V_FLAGS        := -Wall --clk mclk --trace --Mdir ${OBJ_DIR} --prefix ${VERILATED_NAME} -GLEN=${FFT_LEN}
+V_FLAGS        := -Wall --assert --clk mclk --trace --Mdir ${OBJ_DIR} --prefix ${VERILATED_NAME} -GLEN=${FFT_LEN}
 
 .PHONY: default clean
 
