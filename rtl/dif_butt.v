@@ -177,8 +177,8 @@ module dif_butt
       wire twiddI_clip = ~init_r & vld1 & (&twiddOutRIR_e1[IN_W+1+4+TWID_W-1 -: BITS_TO_CHOP+1] ^ |twiddOutRIR_e1[IN_W+1+4+TWID_W-1 -: BITS_TO_CHOP+1]);
       wire twiddQ_clip = ~init_r & vld1 & (&twiddOutRQR_e1[IN_W+1+4+TWID_W-1 -: BITS_TO_CHOP+1] ^ |twiddOutRQR_e1[IN_W+1+4+TWID_W-1 -: BITS_TO_CHOP+1]);
 
-      wire twiddI_clip_val = $signed({twiddOutRIR_e1[IN_W+1+4+TWID_W-1], {IN_W+1+4+TWID_W-1-BITS_TO_CHOP{~twiddOutRIR_e1[IN_W+1+4+TWID_W-1]}}});
-      wire twiddQ_clip_val = $signed({twiddOutRQR_e1[IN_W+1+4+TWID_W-1], {IN_W+1+4+TWID_W-1-BITS_TO_CHOP{~twiddOutRQR_e1[IN_W+1+4+TWID_W-1]}}});
+      wire [IN_W+1+4+TWID_W-BITS_TO_CHOP-1:0] twiddI_clip_val = $signed({twiddOutRIR_e1[IN_W+1+4+TWID_W-1], {IN_W+1+4+TWID_W-1-BITS_TO_CHOP{~twiddOutRIR_e1[IN_W+1+4+TWID_W-1]}}});
+      wire [IN_W+1+4+TWID_W-BITS_TO_CHOP-1:0] twiddQ_clip_val = $signed({twiddOutRQR_e1[IN_W+1+4+TWID_W-1], {IN_W+1+4+TWID_W-1-BITS_TO_CHOP{~twiddOutRQR_e1[IN_W+1+4+TWID_W-1]}}});
 
       always @(posedge mclk)  twiddOutRIR <= vld1 & ~init_r ?
                                                twiddI_clip ? twiddI_clip_val :
