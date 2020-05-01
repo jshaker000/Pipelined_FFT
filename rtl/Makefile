@@ -25,4 +25,4 @@ twiddle_rom.v: gen_twiddle_v.py
 	./$<
 
 clean:
-	rm -rf obj_dir* *.vcd twiddle_master.v
+	rm -rf obj_dir* *.vcd twiddle_rom.v
