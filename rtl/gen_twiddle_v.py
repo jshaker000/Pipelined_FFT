@@ -76,19 +76,6 @@ for str_base in ["cos_rom", "sin_rom"]:
                  "      %s[ii] = trunc_val;\n"  % (str_base) +
                  "    end\n" +
                  "  end\n\n")
-#for str_base in ["cos_rom", "sin_rom"]:
-#    file_v.write("  // select the needed signals from %s_master into %s and apply convergent rounding to make the real, synthesized rom\n" %(str_base, str_base) +
-#                 "  reg signed [OUT_W-1:0] %s [0:(FFT_LEN/4)-1];\n" % (str_base) +
-#                 "  generate\n" +
-#                 "    for(ii = 0; ii < FFT_LEN/4; ii=ii+1) begin: init_%s\n" % (str_base) +
-#                 "      reg [$clog2((MAX_FFT_LEN/2)*MASTER_OUT_W)-2:0] strt_idx = (ii*MASTER_OUT_W) << (MASTER_ADDR_W-ADDR_W);\n" +
-#                 "      reg signed [MASTER_OUT_W-1:0] sel_val   = $signed(%s_master[strt_idx +: MASTER_OUT_W])%s;\n" % (str_base,
-#                        "" if str_base == "cos_rom" else " * (IS_IFFT ? -'sd1 : 'd1)") +
-#                 "      reg signed [MASTER_OUT_W-1:0] rnd_val   = sel_val + {{OUT_W{1'b0}}, sel_val[MASTER_OUT_W-OUT_W], {MASTER_OUT_W-OUT_W-1{~sel_val[MASTER_OUT_W-OUT_W]}}};\n" +
-#                 "      reg signed        [OUT_W-1:0] trunc_val = $signed(rnd_val[MASTER_OUT_W - 1 -: OUT_W]);\n" +
-#                 "      initial %s[ii] = trunc_val;\n"  % (str_base) +
-#                 "    end\n" +
-#                 "  endgenerate\n\n")
 
 file_v.write("  reg                    addr_sign_d1;\n"                                  +
              "  reg       [ADDR_W-2:0] translated_addr;\n"                               +
