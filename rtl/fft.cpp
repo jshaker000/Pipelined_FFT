@@ -134,8 +134,9 @@ int main(int argc, char**argv)
     const std::int64_t iw      = tb->fft->get_inw();
     const std::int64_t ow      = tb->fft->get_outw();
 
-    const std::int64_t mx_ampl = static_cast<std::int64_t>(std::pow(2, iw-1) - 1);
-    std::uniform_int_distribution<std::int64_t> dst_in(-mx_ampl/2.0, mx_ampl/2.0);
+    const std::int64_t mx_ampl = static_cast<std::int64_t>((std::pow(2, iw-1) - 1) / std::pow(2, 1.0/2)); // total energy of I/Q for each sample
+                                                                                                          // must be able to fit in IW
+    std::uniform_int_distribution<std::int64_t> dst_in(-mx_ampl, mx_ampl);
     std::uniform_real_distribution<double> dst_T (1, fft_len);
 
     const std::int64_t stages  = log2c(fft_len);

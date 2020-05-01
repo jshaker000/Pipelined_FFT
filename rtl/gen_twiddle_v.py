@@ -77,8 +77,8 @@ for str_base in ["cos_rom", "sin_rom"]:
                  "    end\n" +
                  "  end\n\n")
 
-file_v.write("  re                addr_sign_d1;\n"                                        +
-             "  re g [ADDR_W-2:0] translated_addr;\n"                                     +
+file_v.write("  reg               addr_sign_d1;\n"                                        +
+             "  reg  [ADDR_W-2:0] translated_addr;\n"                                     +
              "  wire addr_sign  = i_addr[ADDR_W-1];\n"                                    +
              "  wire is_n_4     = addr_sign & (translated_addr == 0);\n\n"                +
              "  always @(posedge mclk) addr_sign_d1    <= addr_sign;\n"                   +
