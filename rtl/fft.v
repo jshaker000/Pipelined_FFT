@@ -4,7 +4,7 @@
 
 `default_nettype none
 module fft #(
-  parameter  IN_W    =  12,
+  parameter  IN_W    =  20,
   parameter  FFT_LEN =  256,
   localparam STAGES  =  $clog2(FFT_LEN),
   localparam INT_W   =  IN_W + STAGES,

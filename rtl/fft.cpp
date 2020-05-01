@@ -122,7 +122,7 @@ int main(int argc, char**argv)
     const std::string tr_f = ((GetEnv("DUMP_F")) != "") ? GetEnv("DUMP_F") : "fft" + std::to_string(fft_len) + "_trace.vcd";
 
     std::random_device dev;
-    const std::int64_t seed = (GetEnv("SEED") != "") ? std::stoi(GetEnv("SEED")) : dev();
+    const std::int64_t seed = (GetEnv("SEED") != "") ? std::stol(GetEnv("SEED")) : dev();
     std::mt19937 rng(seed);
 
     if ((fft_len & (fft_len - 1)) != 0)
