@@ -109,16 +109,29 @@ static void tick(int tickcount, Vfft *tb,
 
 int main(int argc, char**argv)
 {
-    std::random_device dev;
-    std::mt19937 rng(dev());
-
-    const bool dump_traces = (GetEnv("DUMPTRACES") == "1") || (GetEnv("DUMP_TRACES") == "1");
-    const std::string tr_f = ((GetEnv("DUMP_F")) != "") ? GetEnv("DUMP_F") : "fft_trace.vcd";
-
     Verilated::commandArgs(argc,argv);
     Vfft *tb  = new Vfft;
-    assert(tb!=nullptr);
+    assert(tb != nullptr);
     VerilatedVcdC *tfp = nullptr;
+
+    const std::int64_t fft_len = tb->fft->get_fft_len();
+    const std::int64_t iw      = tb->fft->get_inw();
+    const std::int64_t ow      = tb->fft->get_outw();
+
+    const bool dump_traces = (GetEnv("DUMPTRACES") == "1") || (GetEnv("DUMP_TRACES") == "1");
+    const std::string tr_f = ((GetEnv("DUMP_F")) != "") ? GetEnv("DUMP_F") : "fft" + std::to_string(fft_len) + "_trace.vcd";
+
+    std::random_device dev;
+    const std::int64_t seed = (GetEnv("SEED") != "") ? std::stoi(GetEnv("SEED")) : dev();
+    std::mt19937 rng(seed);
+
+    if ((fft_len & (fft_len - 1)) != 0)
+    {
+        std::cerr << "ERROR. FFT LEN " << fft_len << " is not a power of 2" << std::endl;
+        delete tb;
+        return -1;
+    }
+
 
     if (dump_traces)
     {
@@ -126,13 +139,9 @@ int main(int argc, char**argv)
         tfp = new VerilatedVcdC;
         tb->trace(tfp,99);
         tfp->open(tr_f.c_str());
-        assert(tfp!=nullptr);
+        assert(tfp != nullptr);
         std::cerr << "Opening dump file: " << tr_f << std::endl;
     }
-
-    const std::int64_t fft_len = tb->fft->get_fft_len();
-    const std::int64_t iw      = tb->fft->get_inw();
-    const std::int64_t ow      = tb->fft->get_outw();
 
     const std::int64_t mx_ampl = static_cast<std::int64_t>((std::pow(2, iw-1) - 1) / std::pow(2, 1.0/2)); // total energy of I/Q for each sample
                                                                                                           // must be able to fit in IW
@@ -142,18 +151,13 @@ int main(int argc, char**argv)
     const std::int64_t stages  = log2c(fft_len);
     const std::int64_t max_err = stages <= 2 ? 0 : 8*stages; // is this right?
 
-    if ((fft_len & (fft_len - 1)) != 0)
-    {
-        std::cerr << "ERROR. FFT LEN " << fft_len << " is not a power of 2" << std::endl;
-        return -1;
-    }
-
     fftw_complex* i_data = static_cast<fftw_complex*>(fftw_malloc(fft_len * sizeof(*i_data)));
     fftw_complex* o_data = static_cast<fftw_complex*>(fftw_malloc(fft_len * sizeof(*o_data)));
     const fftw_plan plan = fftw_plan_dft_1d(fft_len, i_data, o_data, FFTW_FORWARD, FFTW_MEASURE);
 
-
-    std::cerr << "FFT Test. Setup:" << "\n"
+    std::cerr << "FFT Test"                         << "\n"
+              << "Config:"                          << "\n"
+              << "\tC++ Seed:          " << seed    << "\n"
               << "\tFFT_Len:           " << fft_len << "\n"
               << "\tFFT_Stages:        " << stages  << "\n"
               << "\tIn_Bits:           " << iw      << "\n"
