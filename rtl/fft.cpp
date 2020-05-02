@@ -4,6 +4,7 @@
 #include "verilated_vcd_c.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
