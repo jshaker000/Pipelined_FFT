@@ -195,7 +195,7 @@ int main(int argc, char**argv)
 
     std::cerr << "FFT Test"                                                       << "\n"
               << "Config:"                                                        << "\n"
-              << "\tC++ Seed:          " << std::hex << std::uppercase << seed    << "\n"
+              << "\tC++ Seed:          " << std::hex << std::uppercase << seed    << "\n" << std::dec
               << "\tFFT_Len:           " << fft_len                               << "\n"
               << "\tFFT_Stages:        " << stages                                << "\n"
               << "\tIn_Bits:           " << iw                                    << "\n"
