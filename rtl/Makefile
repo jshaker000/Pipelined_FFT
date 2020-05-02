@@ -17,7 +17,7 @@ ${OBJ_DIR}/${VERILATED_NAME} : % : %.mk ${MODULE_NAME}.cpp
 	cd ${OBJ_DIR}; make -f $(patsubst ${OBJ_DIR}/%,%,$<)
 	@ touch $@
 
-${OBJ_DIR}/${VERILATED_NAME}.mk : ${MODULE_NAME}.v $(filter-out ${MODULE_NAME}, *.v) ${MODULE_NAME}.cpp twiddle_rom.v
+${OBJ_DIR}/${VERILATED_NAME}.mk : ${MODULE_NAME}.v $(filter-out ${MODULE_NAME}, *.v) twiddle_rom.v
 	verilator ${V_FLAGS} -cc $< --exe $(patsubst %.v,%.cpp,$<) -CFLAGS "${CFLAGS}" -LDFLAGS "${LDLIBS}"
 	@ touch $@
 

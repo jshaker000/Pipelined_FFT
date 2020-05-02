@@ -3,7 +3,7 @@
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 
-#include <cassert>
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
@@ -111,7 +111,11 @@ int main(int argc, char**argv)
 {
     Verilated::commandArgs(argc,argv);
     Vfft *tb  = new Vfft;
-    assert(tb != nullptr);
+    if (tb == nullptr)
+    {
+        std::cerr << "Error initializing test" << std::endl;
+        return -1;
+    }
     VerilatedVcdC *tfp = nullptr;
 
     const std::int64_t fft_len = tb->fft->get_fft_len();
@@ -121,8 +125,37 @@ int main(int argc, char**argv)
     const bool dump_traces = (GetEnv("DUMPTRACES") == "1") || (GetEnv("DUMP_TRACES") == "1");
     const std::string tr_f = ((GetEnv("DUMP_F")) != "") ? GetEnv("DUMP_F") : "fft" + std::to_string(fft_len) + "_trace.vcd";
 
-    std::random_device dev;
-    const std::int64_t seed = (GetEnv("SEED") != "") ? std::stol(GetEnv("SEED")) : dev();
+    std::uint64_t seed;
+    if (GetEnv("SEED") == "")
+    {
+        std::random_device dev;
+        std::uniform_int_distribution<std::uint64_t> dst_64_bits(0, 18446744073709551615LLU);
+        seed = dst_64_bits(dev);
+    }
+    else
+    {
+        const std::string hex_chars("0123456789ABCDEF");
+        std::string tmp = GetEnv("SEED");
+        std::for_each(tmp.begin(), tmp.end(), [](auto &c){ c = toupper(c); });
+        if (tmp[0] == '0' &&  tmp[1] == 'X')
+        {
+            tmp = tmp.substr(2);
+        }
+        size_t errors = 0;
+        std::remove_if(tmp.begin(), tmp.end(),
+        [&hex_chars, &errors](const auto c)
+        {
+            bool to_return = std::find(hex_chars.begin(), hex_chars.end(), c) == hex_chars.end();
+            errors += to_return ? 1 : 0;
+            return to_return;
+        });
+        if (errors != 0 || tmp.size() > 16)
+        {
+            std::cerr << "Error Parsing Seed. Seed must be a 64-bit, unsigned, hexadecimal integer." << std::endl;
+            return -1;
+        }
+        seed = std::stoull(tmp, nullptr, 16);
+    }
     std::mt19937 rng(seed);
 
     if ((fft_len & (fft_len - 1)) != 0)
@@ -132,15 +165,19 @@ int main(int argc, char**argv)
         return -1;
     }
 
-
     if (dump_traces)
     {
         Verilated::traceEverOn(true);
         tfp = new VerilatedVcdC;
         tb->trace(tfp,99);
         tfp->open(tr_f.c_str());
-        assert(tfp != nullptr);
         std::cerr << "Opening dump file: " << tr_f << std::endl;
+        if (tfp == nullptr)
+        {
+            std::cerr << "Error opening dump file." << std::endl;
+            delete tb;
+            return -1;
+        }
     }
 
     const std::int64_t mx_ampl = static_cast<std::int64_t>((std::pow(2, iw-1) - 1) / std::pow(2, 1.0/2)); // total energy of I/Q for each sample
@@ -155,14 +192,14 @@ int main(int argc, char**argv)
     fftw_complex* o_data = static_cast<fftw_complex*>(fftw_malloc(fft_len * sizeof(*o_data)));
     const fftw_plan plan = fftw_plan_dft_1d(fft_len, i_data, o_data, FFTW_FORWARD, FFTW_MEASURE);
 
-    std::cerr << "FFT Test"                         << "\n"
-              << "Config:"                          << "\n"
-              << "\tC++ Seed:          " << seed    << "\n"
-              << "\tFFT_Len:           " << fft_len << "\n"
-              << "\tFFT_Stages:        " << stages  << "\n"
-              << "\tIn_Bits:           " << iw      << "\n"
-              << "\tOut_Bits:          " << ow      << "\n"
-              << "\tMax Allowed Error: " << max_err << "\n" << std::flush;
+    std::cerr << "FFT Test"                                                       << "\n"
+              << "Config:"                                                        << "\n"
+              << "\tC++ Seed:          " << std::hex << std::uppercase << seed    << "\n"
+              << "\tFFT_Len:           " << fft_len                               << "\n"
+              << "\tFFT_Stages:        " << stages                                << "\n"
+              << "\tIn_Bits:           " << iw                                    << "\n"
+              << "\tOut_Bits:          " << ow                                    << "\n"
+              << "\tMax Allowed Error: " << max_err                               << std::endl;
 
     std::deque<std::pair<double,double>> results;
 
@@ -179,7 +216,7 @@ int main(int argc, char**argv)
     double max_error = 0;
 
     int       mode = 0;
-    const int num_ffts =  30;
+    const int num_ffts  = 30;
     const int num_modes = 3;
 
     double T = 7.0;
