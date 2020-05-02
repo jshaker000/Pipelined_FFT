@@ -62,9 +62,9 @@ Note these symetries:
 
 Then the DFT can be experessed as:
 
-\begin{equation}  X_{N}[k] = \sum_{n=0}^{N-1} x[n] W_{N}^{kn} \end{equation}
+\begin{equation}  X_{N}\left[k\right] = \sum_{n=0}^{N-1} x\left[n\right] W_{N}^{kn} \end{equation}
 
-Notice that this requires N multiplications and N summations for each $X[k]$, for a total of $N^{2}$ multiplies.
+Notice that this requires N multiplications and N summations for each $X\left[k\right]$, for a total of $N^{2}$ multiplies.
 
 There are two main ways to divide the DFT into similar bits of computation,
 \emph{Decimation in Frequency} and \emph{Decimation in Time}.
@@ -95,29 +95,29 @@ Bit reverse order, \emph{Decimation in Time} is more natural.
 \subsection{Decimation in Frequency}
 
 \begin{align*}
-    X_{N}[k] &= \sum_{n=0}^{N/2-1} x[n] W_{N}^{kn} + &                     & \sum_{n=N/2}^{N-1} x[n] W_{N}^{k} \\
-    X_{N}[k] &= \sum_{n=0}^{N/2-1} x[n] W_{N}^{kn} + &                     & \sum_{n=0}^{N/2-1} x[n+\frac{N}{2}] W_{N}^{k\left(n + \frac{N}{2}\right)} \\
-    X_{N}[k] &= \sum_{n=0}^{N/2-1} x[n] W_{N}^{kn} + & W_{2}^{k}           & \sum_{n=0}^{N/2-1} x[n+\frac{N}{2}] W_{N}^{n} \\
-    X_{N}[k] &= \sum_{n=0}^{N/2-1} x[n] W_{N}^{kn} + & \left(-1\right)^{k} & \sum_{n=0}^{N/2-1} x[n+\frac{N}{2}] W_{N}^{n} \\
+    X_{N}\left[k\right] &= \sum_{n=0}^{N/2-1} x\left[n\right] W_{N}^{kn} + &                     & \sum_{n=N/2}^{N-1} x\left[n\right] W_{N}^{k} \\
+    X_{N}\left[k\right] &= \sum_{n=0}^{N/2-1} x\left[n\right] W_{N}^{kn} + &                     & \sum_{n=0}^{N/2-1} x\left[n+\frac{N}{2}\right] W_{N}^{k\left(n + \frac{N}{2}\right)} \\
+    X_{N}\left[k\right] &= \sum_{n=0}^{N/2-1} x\left[n\right] W_{N}^{kn} + & W_{2}^{k}           & \sum_{n=0}^{N/2-1} x\left[n+\frac{N}{2}\right] W_{N}^{n} \\
+    X_{N}\left[k\right] &= \sum_{n=0}^{N/2-1} x\left[n\right] W_{N}^{kn} + & \left(-1\right)^{k} & \sum_{n=0}^{N/2-1} x\left[n+\frac{N}{2}\right] W_{N}^{n} \\
 \end{align*}
 
-let $a[n] = x[n] + x[n+\frac{N}{2}]$, $b[n] = x[n] - x[n+\frac{N}{2}]$.
+let $a\left[n\right] = x\left[n\right] + x\left[n+\frac{N}{2}\right]$, $b\left[n\right] = x\left[n\right] - x\left[n+\frac{N}{2}\right]$.
 
 \begin{minipage}{0.5\textwidth}
   \begin{align*}
-    X_{N}[2m]   &= \sum_{n=0}^{N/2-1} a[n] W_{N}^{2mn} \\
-    X_{N}[2m]   &= \sum_{n=0}^{N/2-1} a[n] W_{N/2}^{mn} \\
+    X_{N}\left[2m\right]   &= \sum_{n=0}^{N/2-1} a\left[n\right] W_{N}^{2mn} \\
+    X_{N}\left[2m\right]   &= \sum_{n=0}^{N/2-1} a\left[n\right] W_{N/2}^{mn} \\
   \end{align*}
 \end{minipage}
 \begin{minipage}{0.5\textwidth}
   \begin{align*}
-    X_{N}[2m+1] &= \sum_{n=0}^{N/2-1} b[n] W_{N}^{\left(2m+1\right)n} \\
-    X_{N}[2m+1] &= \sum_{n=0}^{N/2-1} \left(b[n] W_{N}^{n} \right) W_{N/2}^{mn} \\
+    X_{N}\left[2m+1\right] &= \sum_{n=0}^{N/2-1} b\left[n\right] W_{N}^{\left(2m+1\right)n} \\
+    X_{N}\left[2m+1\right] &= \sum_{n=0}^{N/2-1} \left(b\left[n\right] W_{N}^{n} \right) W_{N/2}^{mn} \\
   \end{align*}
 \end{minipage}
 
-You can now see that the N-point DFT $X_{N}[k]$ has been reduced the combination of the N/2-point DFT of $a[n]$ and
-the N/2 point FFT of $b[n]W_{N}^{n}$. This can be done recursively to simplify the computations greatly.
+You can now see that the N-point DFT $X_{N}\left[k\right]$ has been reduced the combination of the N/2-point DFT of $a\left[n\right]$ and
+the N/2 point FFT of $b\left[n\right]W_{N}^{n}$. This can be done recursively to simplify the computations greatly.
 The $W_{N}^{n}$ terms are called the \emph{twiddle factors}.
 
 \begin{figure}[h!]
@@ -134,11 +134,11 @@ The $W_{N}^{n}$ terms are called the \emph{twiddle factors}.
 \end {figure}
 
 See how we could have $log2\left(N\right)$ butterfly stages, and do $2^{\emph{stage}}$ times combining of inputs from $n$ in $\left[0, 2^{\text{stage}}\right)$
-\emph{left}: $a_{{stage}-1}[n]$
-and \emph{right}: $b_{{stage}-1}[n]$
+\emph{left}: $a_{{stage}-1}\left[n\right]$
+and \emph{right}: $b_{{stage}-1}\left[n\right]$
 (using a FIFO to order the incoming data), apply twiddle factors as appropriate and output
-\emph{left}: $a_{\text{stage}}[n] = a_{{stage}-1}[n] + b_{{stage}-1}[n] $
-and \emph{right}: $b_{\text{stage}}[n] = a_{{stage}-1}[n] - b_{\text{stage}-1} W_{N/2^{\text{stage}}}^{n}$
+\emph{left}: $a_{\text{stage}}\left[n\right] = a_{{stage}-1}\left[n\right] + b_{{stage}-1}\left[n\right] $
+and \emph{right}: $b_{\text{stage}}\left[n\right] = a_{{stage}-1}\left[n\right] - b_{\text{stage}-1} W_{N/2^{\text{stage}}}^{n}$
 It will need to keep a counter of when we are to apply each twiddle (and the last two stages with have trivial twiddles).
 Also note the the input is in natural order but the output is in bitreverse order.
 
@@ -146,29 +146,28 @@ Also note the the input is in natural order but the output is in bitreverse orde
 
 \subsection{Decimation in Time}
 \begin{align*}
-    X_{N}[k] &= \sum_{n=0}^{N/2-1}x[2n] W_{N}^{2mk} + &           &\sum_{n=0}^{N/2-1}x[2n+1] W_{N}^{\left(2m+1\right)k} \\
-    X_{N}[k] &= \sum_{n=0}^{N/2-1}x[2n] W_{N}^{2mk} + &           &\sum_{n=0}^{N/2-1}x[2n+1] W_{N}^{k} W_{N}^{2mk} \\
-    X_{N}[k] &= \sum_{n=0}^{N/2-1}x[2n] W_{N}^{mk}  + & W_{N}^{k} &\sum_{n=0}^{N/2-1}x[2n+1] W_{N/2}^{mk} \\
+    X_{N}\left[k\right] &= \sum_{n=0}^{N/2-1}x\left[2n\right] W_{N}^{2mk}   + &             &\sum_{n=0}^{N/2-1}x\left[2n+1\right] W_{N}^{\left(2m+1\right)k} \\
+    X_{N}\left[k\right] &= \sum_{n=0}^{N/2-1}x\left[2n\right] W_{N}^{2mk}   + &             &\sum_{n=0}^{N/2-1}x\left[2n+1\right] W_{N}^{k} W_{N}^{2mk} \\
+    X_{N}\left[k\right] &= \sum_{n=0}^{N/2-1}x\left[2n\right] W_{N/2}^{mk}  + & W_{N/2}^{k} &\sum_{n=0}^{N/2-1}x\left[2n+1\right] W_{N/2}^{mk} \\
 \end{align*}
 
-Let $G[k]$ be the N/2-point DFT of the even samples of $x[n]$ and let $H[k]$ be th2 N/2-point DFT of the odd samples of $x[n]$.
-Note that $G[k+\frac{N}{2}] = G[k]$.
-
+Let $G\left[k\right]$ be the N/2-point DFT of the even samples of $x\left[n\right]$ and let $H\left[k\right]$ be the N/2-point DFT of the odd samples of $x\left[n\right]$.
+    Note that $G\left[k+\frac{N}{2}\right] = G\left[k\right]$ and $H\left[k+\frac{N}{2}\right] = H\left[k\right]$ because $W_{N/2}^{N/2} = 1$.
 
 \begin{minipage}{0.5\textwidth}
   \begin{align*}
-    X_{N}[k]               &= G[k]             + & W_{N}^{k}     & H[k] \\
+    X_{N}\left[k\right]               &= G\left[k\right]                   + & W_{N}^{k}     & H\left[k\right] \\
   \end{align*}
 \end{minipage}
 \begin{minipage}{0.5\textwidth}
   \begin{align*}
-    X_{N}[k+\frac{N}{2}]   &= G[k+\frac{N}{2}] + & W_{N}^{k+N/2} & H[k+\frac{N}{2}] \\
-    X_{N}[k+\frac{N}{2}]   &= G[k+\frac{N}{2}] - & W_{N}^{k}     & H[k+\frac{N}{2}] \\
-    X_{N}[k+\frac{N}{2}]   &= G[k]             - & W_{N}^{k}     & H[k] \\
+    X_{N}\left[k+\frac{N}{2}\right]   &= G\left[k+\frac{N}{2}\right] + & W_{N}^{k+N/2} & H\left[k+\frac{N}{2}\right] \\
+    X_{N}\left[k+\frac{N}{2}\right]   &= G\left[k+\frac{N}{2}\right] - & W_{N}^{k}     & H\left[k+\frac{N}{2}\right] \\
+    X_{N}\left[k+\frac{N}{2}\right]   &= G\left[k\right]             - & W_{N}^{k}     & H\left[k\right] \\
   \end{align*}
 \end{minipage}
 
-You can now see that the N-point DFT $X_{N}[k]$ has been reduced to the combination of two N/2 point DFTs, $H[k]$ and $G[k]$.
+You can now see that the N-point DFT $X_{N}\left[k\right]$ has been reduced to the combination of two N/2 point DFTs, $H\left[k\right]$ and $G\left[k\right]$.
 This can be done recursively to simplify computations greatly. The $W_{N}^{k}$ terms are called twiddle factors.
 
 \begin{figure}[h!]
@@ -184,10 +183,10 @@ This can be done recursively to simplify computations greatly. The $W_{N}^{k}$ t
  \end{minipage}
 \end {figure}
 
-See how we could have $log2\left(N\right)$ butterfly stages, and do $N/2^{stage+1}$ combining of inputs from $k$ in $\left[0, 2^{\text{stage}}\right)$
+See how we could have $log2\left(N\right)$ butterfly stages, and do $\frac{N}{2^{stage+1}}$ combining of inputs from $k$ in $\left[0, 2^{\text{stage}}\right)$
 (using a FIFO to order the incoming data), apply twiddle factors as appropriate and output
-\emph{left}: $G_{\text{stage}}[k]=G_{\text{stage}-1}[k]+W_{N/2^{\text{stage}}}^{k} H_{\text{stage}-1}[k]$
-and \emph{right}: $H_{\text{stage}}[k]=G_{\text{stage}-1}[k]-W_{N/2^{\text{stage}}}^{k} H_{\text{stage}-1}[k]$
+\emph{left}: $G_{\text{stage}}\left[k\right]=G_{\text{stage}-1}\left[k\right]+W_{N/2^{\text{stage}}}^{k} H_{\text{stage}-1}\left[k\right]$
+and \emph{right}: $H_{\text{stage}}\left[k\right]=G_{\text{stage}-1}\left[k\right]-W_{N/2^{\text{stage}}}^{k} H_{\text{stage}-1}\left[k\right]$
 It will need to keep a counter of where we are to apply each twiddle (and the first two stages with have trivial twiddles).
 Also note the the input is in bitreverse order but the output is in natural order.
 
@@ -198,7 +197,7 @@ The equation for the Inverse FFT is quite similar to that of the the FFT, except
 and the twiddle factor at each stage is the complex conjugate of its value in the corresponding FFT stages.
 Therefore, we can implement it the same way as we implemented the FFT (just adjusting the ROM values appropriately).
 
-      \begin{equation} x[n] = \frac{1}{N} \sum_{k=0}^{N-1}X[k] W_{N}^{kn} \end{equation}
+      \begin{equation} x\left[n\right] = \frac{1}{N} \sum_{k=0}^{N-1}X\left[k\right] W_{N}^{kn} \end{equation}
 
 The IFFT can be implemented using either the \emph{Decimation in Time} or the \emph{Decimation in Frequency} approach.
 
@@ -213,7 +212,7 @@ The same principles can be applied to compute any $2^{M}$ point FFT.
 Note that the result comes out in "bitreverse" order can use a ram buffer at the end to correct this.
 The butterfly units will need to have Roms with Twiddle factors and keep an internal state to know when to apply each one. \\
 Notice that there is one only Butterfly unit perstage, so only one complex multiply per stage, meaning we only use about 4*log(N) real multipliers. \\
-Each Stage \emph{m} will need $N/(2^{\text{m+1}})$ storage for each its input buffer and output buffer for data alignment. \\
+Each Stage \emph{m} will need $\frac{N}{(2^{\text{m+1}}}$ storage for each its input buffer and output buffer for data alignment. \\
 Note that each butterfly is only active for half the time.
 
   \begin{figure}[h!]
@@ -249,8 +248,8 @@ We can then zero pad both signals to length $2^{N+1}$, and have enough room to a
 as $2^{N} + 2^{N}+1 -1 = 2^{N+1}$. A user can program the filter in the frequency domain, in bit reverse order to our module, and we can take
 the zero padded FFT of the input, multiply, take the IFFT, and bit reverse the output to do the convolution. \\
 
-A problem comes if we want to take the convolution of an infinite stream (or very long stream) of samples $x[n]$, with our relatively short
-filter $h[n]$. Think of the case of filtering audio coming in at 44.1Ksa/s with a 1000 point filter. A song of 1 minute would have over $2*10^{6}$
+A problem comes if we want to take the convolution of an infinite stream (or very long stream) of samples $x\left[n\right]$, with our relatively short
+filter $h\left[n\right]$. Think of the case of filtering audio coming in at 44.1Ksa/s with a 1000 point filter. A song of 1 minute would have over $2*10^{6}$
 samples and would require a $2^{22}$ point FFT to avoid circular convolution effects. \\
 
 It would be better if we could do the convolution in chunks. Since the filter is length 1000, we can zero pad to the nearest power of 2+1, 1025. Then we will ask
@@ -309,8 +308,9 @@ The same edits can be applied to the Ifft.
   \end {figure}
 
 
-We need to combine the results of 2 FFTs, Ie $y_{A}[N/2-1]$ with $y_{B}[0]$, $y_{A}[N/2]$ with $y_{B}[1]$, etc.
-In addition, the IFFT will always output 2 samples at a time $y[i]$ and $y[i+N/2]$. (I will refer to these as left(L) and right(R))
+We need to combine the results of 2 FFTs, Ie $y_{A}\left[\frac{N}{2}-1\right]$ with $y_{B}\left[0\right]$, 
+$y_{A}\left[\frac{N}{2}\right]$ with $y_{B}\left[1\right]$, etc.
+In addition, the IFFT will always output 2 samples at a time $y\left[i\right]$ and $y\left[i+\frac{N}{2}\right]$. (I will refer to these as left(L) and right(R))
 The idea will be, for subsquential FFTs A,B,C, ...; We need to combine $A_{R}$ with $B_{L}$, and $B_{R}$ with $C_{L}$, etc.
 
 Each clock, we store the incoming Right sample into the fifo, and output the left signal added with the right signal popped from the fifo.
