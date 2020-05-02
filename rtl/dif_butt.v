@@ -165,9 +165,9 @@ module dif_butt
       reg twiddOutClipR  = 1'b0;
       reg signed [SUMS_LEN-1:0] twiddOutLIR;
       reg signed [SUMS_LEN-1:0] twiddOutLQR;
-      always @(posedge mclk)  twiddOutLIR    <= vld1 & ~init_r ? sumI_d1 : twiddOutLIR;
-      always @(posedge mclk)  twiddOutLQR    <= vld1 & ~init_r ? sumQ_d1 : twiddOutLQR;
-      always @(posedge mclk)  twiddOutValidR <= vld1 & ~init_r;
+      always @(posedge mclk) twiddOutLIR    <= vld1 & ~init_r ? sumI_d1 : twiddOutLIR;
+      always @(posedge mclk) twiddOutLQR    <= vld1 & ~init_r ? sumQ_d1 : twiddOutLQR;
+      always @(posedge mclk) twiddOutValidR <= vld1 & ~init_r;
 
       localparam BITS_TO_CHOP = 6;
 
@@ -175,7 +175,7 @@ module dif_butt
       reg signed  [S1_LEN+4-BITS_TO_CHOP-1:0] twiddOutRQR;
 
       wire signed [S1_LEN+4-1:0] twiddOutRIR_e1 = $signed({{4{s1[S1_LEN-1]}}, s1}) - $signed({{4{s2[S1_LEN-1]}}, s2});
-      wire signed [S1_LEN+4-1:0] twiddOutRQR_e1 = $signed({{2{s3[S1_LEN]}},   s3}) - $signed({{4{s2[S1_LEN-1]}}, s2}) - $signed({{4{s1[S1_LEN-1]}}, s1});
+      wire signed [S1_LEN+4-1:0] twiddOutRQR_e1 = $signed({{2{s3[S1_LEN+1]}}, s3}) - $signed({{4{s2[S1_LEN-1]}}, s2}) - $signed({{4{s1[S1_LEN-1]}}, s1});
 
       wire twiddI_clip = ~init_r & vld1 & (&twiddOutRIR_e1[S1_LEN+4-1 -: BITS_TO_CHOP+1] ^ |twiddOutRIR_e1[S1_LEN+4-1 -: BITS_TO_CHOP+1]);
       wire twiddQ_clip = ~init_r & vld1 & (&twiddOutRQR_e1[S1_LEN+4-1 -: BITS_TO_CHOP+1] ^ |twiddOutRQR_e1[S1_LEN+4-1 -: BITS_TO_CHOP+1]);
