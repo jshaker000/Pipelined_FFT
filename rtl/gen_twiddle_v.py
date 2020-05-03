@@ -39,7 +39,7 @@ file_v.write("`default_nettype none\n"                               +
              ");\n\n")
 
 file_v.write("  localparam [OUT_W-1:0] COS_N_4 = {OUT_W{1'b0}};\n" +
-             "  localparam [OUT_W-1:0] SIN_N_4 = {{2{1'b1}}, {OUT_W-2{1'b0}}};\n\n")
+             "  localparam [OUT_W-1:0] SIN_N_4 = IS_IFFT == 0 ? {{2{1'b1}}, {OUT_W-2{1'b0}}} : {{2{1'b0}}, {OUT_W-2{1'b1}}};\n\n")
 
 for str_base in ["cos_rom", "sin_rom"]:
     file_v.write("  localparam [MASTER_OUT_W*(MAX_FFT_LEN/4)-1:0] %s_MASTER = {\n" % (str_base.upper()))

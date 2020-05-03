@@ -138,7 +138,7 @@ module dif_butt
       wire signed   [TWID_W:0] twiddSum;
 
       twiddle_rom    #(.IS_IFFT(IS_IFFT),
-                       .OUT_W(TWID_W),
+                       .OUT_W  (TWID_W),
                        .FFT_LEN(STAGE_FFT_LEN)
       ) inst_twiddle_rom (
         .mclk   (mclk),

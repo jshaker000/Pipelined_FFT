@@ -75,7 +75,8 @@ module dif_stage
     .OUT_W       (OUT_W),
     .TWID_W      (TWID_W),
     .STAGE       (STAGE),
-    .TOTAL_STAGES(TOTAL_STAGES)
+    .TOTAL_STAGES(TOTAL_STAGES),
+    .IS_IFFT     (IS_IFFT)
   ) inst_dif_butt(
     .mclk  (mclk),
     .i_init(i_init),
