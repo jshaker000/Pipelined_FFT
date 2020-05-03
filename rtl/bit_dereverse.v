@@ -15,18 +15,27 @@ module bit_dereverse #(
   output reg    [DATA_W-1:0] o_data
 );
 
-  reg filled_a_ram_this_run = 1'b0;
-  reg store_in              = 1'b0;
-
   reg [DATA_W-1:0] ramA [0:DEPTH-1];
   reg [DATA_W-1:0] ramB [0:DEPTH-1];
 
-  reg    [C_W-1:0] pointer   = {C_W{1'b0}};
-  reg    [C_W-1:0] pointerA  = {C_W{1'b0}};
-  reg    [C_W-1:0] pointerB  = {C_W{1'b0}};
+
+  reg filled_a_ram_this_run;
+  reg store_in;
+
+  reg    [C_W-1:0] pointer;
+  reg    [C_W-1:0] pointerA;
+  reg    [C_W-1:0] pointerB;
+
+  initial begin
+    pointer  = {C_W{1'b0}};
+    pointerA = {C_W{1'b0}};
+    pointerB = {C_W{1'b0}};
+    filled_a_ram_this_run = 1'b0;
+    store_in              = 1'b0;
+  end
 
   wire   [C_W-1:0] pointer_next = i_init ? {C_W{1'b0}} : i_vld ? pointer + {{C_W-1{1'b0}}, 1'b1} : pointer;
-  wire                switch_rw = (pointer == {C_W{1'b1}}) & i_vld;
+  wire                switch_rw = ~i_init & i_vld & (pointer == {C_W{1'b1}});
 
   always @(posedge mclk) filled_a_ram_this_run <= i_init ? 1'b0 : switch_rw | filled_a_ram_this_run;
   always @(posedge mclk) store_in              <= i_init ? 1'b0 : switch_rw ^ store_in;
@@ -36,8 +45,8 @@ module bit_dereverse #(
   always @(posedge mclk) begin: assign_ptrs_a_b
     integer i;
     for(i=0; i < C_W; i=i+1) begin
-      pointerA[i] <= ~store_in ? pointer_next[C_W-i-1] : pointer_next[i];
-      pointerB[i] <=  store_in ? pointer_next[C_W-i-1] : pointer_next[i];
+      pointerA[i] <= i_init ? 1'b0 : ~store_in ? pointer_next[C_W-i-1] : pointer_next[i];
+      pointerB[i] <= i_init ? 1'b0 :  store_in ? pointer_next[C_W-i-1] : pointer_next[i];
     end
   end
 
@@ -70,8 +79,8 @@ module bit_dereverse #(
   always @(posedge mclk) vld_e1     <= i_vld & ~i_init & filled_a_ram_this_run;
   always @(posedge mclk) new_fft_e1 <= i_vld & ~i_init & filled_a_ram_this_run & pointer == {C_W{1'b0}};
 
-  always @(posedge mclk) o_data    <= read_a_d1 & ~i_init ? rA : read_b_d1 & ~i_init ? rB : o_data;
-  always @(posedge mclk) o_vld     <= ~i_init & vld_e1;
-  always @(posedge mclk) o_new_fft <= ~i_init & new_fft_e1;
+  always @(posedge mclk) o_data     <= read_a_d1 & ~i_init ? rA : read_b_d1 & ~i_init ? rB : o_data;
+  always @(posedge mclk) o_vld      <= ~i_init & vld_e1;
+  always @(posedge mclk) o_new_fft  <= ~i_init & new_fft_e1;
 
 endmodule

@@ -42,7 +42,8 @@ module dif_butt
   always @(posedge mclk) rI_r <= ~init_r & i_vld ? i_RI : rI_r;
   always @(posedge mclk) rQ_r <= ~init_r & i_vld ? i_RQ : rQ_r;
 
-  reg [IN_PIPE_STG-1:0]  pipe_in_valid = {IN_PIPE_STG{1'b0}};
+  reg [IN_PIPE_STG-1:0]  pipe_in_valid;
+  initial pipe_in_valid = {IN_PIPE_STG{1'b0}};
 
   always @(posedge mclk) pipe_in_valid <= {IN_PIPE_STG{~init_r}} & {pipe_in_valid[IN_PIPE_STG-2:0], i_vld};
 
@@ -69,8 +70,8 @@ module dif_butt
   wire signed [S1_LEN+4-1:0] twiddOutRI;
   wire signed [S1_LEN+4-1:0] twiddOutRQ;
 
-  wire                              twiddOutValid;
-  wire                              twiddOutClip;
+  wire                       twiddOutValid;
+  wire                       twiddOutClip;
 
   generate
     case (STAGE_FFT_LEN)
@@ -83,14 +84,16 @@ module dif_butt
       assign twiddOutClip  = 1'b0;
     end
     'd4: begin: quarter_twiddle
-      reg   twidd_count = 1'b0;
+      reg     twidd_count;
+      initial twidd_count = 1'b0;
       always @(posedge mclk) twidd_count <= init_r ? 1'b0 : twidd_count ^ pipe_in_valid[IN_PIPE_STG-1];
 
       reg signed [SUMS_LEN-1:0] twiddOutLIR;
       reg signed [SUMS_LEN-1:0] twiddOutLQR;
       reg signed [SUMS_LEN-1:0] twiddOutRIR;
       reg signed [SUMS_LEN-1:0] twiddOutRQR;
-      reg                       twiddOutValidR = 1'b0;
+      reg                       twiddOutValidR;
+      initial                   twiddOutValidR = 1'b0;
 
       always @(posedge mclk) twiddOutValidR <= pipe_in_valid[IN_PIPE_STG-1] & ~init_r;
       always @(posedge mclk) twiddOutLIR    <= pipe_in_valid[IN_PIPE_STG-1] & ~init_r ? sumI : twiddOutLIR;
@@ -121,13 +124,13 @@ module dif_butt
       // STAGE 0, prefetch twiddles and setup for gauss algo
       localparam C_W = $clog2(STAGE_FFT_LEN) - 1;
 
-      reg  [C_W-1:0] twidd_count = {C_W{1'b0}};
+      reg  [C_W-1:0] twidd_count;
+      initial        twidd_count = {C_W{1'b0}};
       wire [C_W-1:0] twidd_addr  = twidd_count + {{C_W-1{1'b0}}, pipe_in_valid[IN_PIPE_STG-2]};
 
       always @(posedge mclk) twidd_count <= init_r ? {C_W{1'b0}} : twidd_addr;
 
       reg signed [SUMS_LEN:0] diffSum;
-
       always @(posedge mclk)  diffSum <= ~init_r & pipe_in_valid[IN_PIPE_STG-2] ? diffI_e1 + diffQ_e1 : diffSum;
 
       wire signed [TWID_W-1:0] twiddI;
@@ -147,7 +150,8 @@ module dif_butt
 
       // ------------ STAGE 1 ----------------------
       // Gauss algorithm to multiply with 3 multipliers
-      reg vld1 = 1'b0;
+      reg vld1;
+      initial vld1 = 1'b0;
       reg signed [SUMS_LEN-1:0] sumI_d1;
       reg signed [SUMS_LEN-1:0] sumQ_d1;
       always @(posedge mclk)  sumI_d1 <= pipe_in_valid[IN_PIPE_STG-1] & ~init_r ? sumI : sumI_d1;
@@ -161,8 +165,10 @@ module dif_butt
       always @(posedge mclk) s3 <= pipe_in_valid[IN_PIPE_STG-1] & ~init_r ? diffSum * twiddSum : s3;
       // ------------ STAGE 2 ----------------------
       // combine
-      reg twiddOutValidR = 1'b0;
-      reg twiddOutClipR  = 1'b0;
+      reg twiddOutValidR;
+      reg twiddOutClipR;
+      initial twiddOutValidR = 1'b0;
+      initial twiddOutClipR  = 1'b0;
       reg signed [SUMS_LEN-1:0] twiddOutLIR;
       reg signed [SUMS_LEN-1:0] twiddOutLQR;
       always @(posedge mclk) twiddOutLIR    <= vld1 & ~init_r ? sumI_d1 : twiddOutLIR;

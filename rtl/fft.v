@@ -26,10 +26,11 @@ module fft #(
     end
   `endif
 
-  reg [3:0] por = 4'b0000;
-  always @(posedge mclk) por <= por > 0 ? por - 1 : 0;
+  reg [3:0] por;
+  initial por = 4'h0;
+  always @(posedge mclk) por <= por != 4'h0 ? por - 4'h1 : 4'b0;
 
-  wire init = i_init | por > 0;
+  wire init = i_init | por != 4'h0;
 
   wire         [STAGES:0] fft_ivld;
   wire        [INT_W-1:0] fft_iI [STAGES:0];
@@ -45,7 +46,7 @@ module fft #(
   generate
     for(i=0; i < STAGES; i=i+1) begin: fft_stage
       localparam iw = IN_W + E_W + 1 + i;
-      localparam ow = IN_W + E_W + 1 + (i + 1);
+      localparam ow = IN_W + E_W + 1 + i + 1;
       localparam tw = i >= STAGES-2 ? 0 : iw + 4;
       dif_stage #(
         .IN_W        (iw),

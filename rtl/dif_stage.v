@@ -30,7 +30,8 @@ module dif_stage
   wire [IN_W-1:0] inbuff_oI;
   wire [IN_W-1:0] inbuff_oQ;
 
-  reg filling_ibuff = 1'b1;
+  reg filling_ibuff;
+  initial filling_ibuff = 1'b1;
   always @(posedge mclk) filling_ibuff <= i_init ? 1'b1 : ibuff_full ? 1'b0 : ibuff_empty ? 1'b1 : filling_ibuff;
   wire push_ibuff  = ~i_init & i_vld & ( filling_ibuff | ibuff_empty) & ~ibuff_full;
   wire pop_ibuff   = ~i_init & i_vld & (~filling_ibuff | ibuff_full)  & ~ibuff_empty;
@@ -97,7 +98,8 @@ module dif_stage
   wire [OUT_W-1:0] obuffQ;
   wire             obuff_vld;
 
-  reg filling_obuff = 1'b1;
+  reg filling_obuff;
+  initial filling_obuff = 1'b1;
   always @(posedge mclk) filling_obuff <= i_init ? 1'b1 : obuff_full ? 1'b0 : obuff_empty ? 1'b1 : filling_obuff;
 
   wire push_obuff  = ~i_init &  butt_vld & ( filling_obuff | obuff_empty) & ~obuff_full;
