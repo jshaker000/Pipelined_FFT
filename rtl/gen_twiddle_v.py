@@ -64,7 +64,9 @@ for str_base in ["cos_rom", "sin_rom"]:
                  "  initial begin: init_%s\n" % (str_base)+
                  "    reg [$clog2((MAX_FFT_LEN/2)*MASTER_OUT_W)-2:0] strt_idx;\n" +
                  "    reg signed [MASTER_OUT_W-1:0] sel_val;\n" +
+                 "    /* verilator lint_off UNUSED */\n" +
                  "    reg signed [MASTER_OUT_W-1:0] rnd_val;\n" +
+                 "    /* verilator lint_off UNUSED */\n" +
                  "    reg signed        [OUT_W-1:0] trunc_val;\n" +
                  "    integer                       ii;\n"        +
                  "    for(ii = 0; ii < FFT_LEN/4; ii=ii+1) begin\n" +
