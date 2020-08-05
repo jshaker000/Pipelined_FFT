@@ -26,7 +26,7 @@ double sc_time_stamp()
     return main_time;
 }
 
-// real to signed
+// real to signed, use convergent rounding
 static std::int64_t r2s(const double n)
 {
     const std::int64_t nr = static_cast<std::int64_t>(std::round(n*10));
@@ -37,7 +37,7 @@ static std::int64_t r2s(const double n)
     return static_cast<std::int64_t>(std::round(n));
 }
 
-// unsigned to signed
+// unsigned u of width w to signed (assumes 2s complement representation)
 static std::int64_t u2s(std::uint64_t u, const std::int64_t w)
 {
     const bool sign = ((u >> (w-1)) & 1) == 1;
@@ -54,6 +54,7 @@ static std::int64_t u2s(std::uint64_t u, const std::int64_t w)
     return static_cast<std::int64_t>(u);
 }
 
+// ceiling of log2 of an integer
 static std::int64_t log2c(std::uint64_t n)
 {
     if (n == 0)
