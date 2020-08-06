@@ -21,22 +21,22 @@ module fifo #(
   localparam WORD_COUNT_WIDTH   = $clog2(FIFO_DEPTH+1'b1),
   localparam FIFO_MAX_POINTER   = FIFO_DEPTH-1'b1
 )(
-  input                         i_clk,
-  input                         i_rst,
+  input wire                         i_clk,
+  input wire                         i_rst,
 
-  input                         i_push,
-  input        [DATA_WIDTH-1:0] i_data,
-  input                         i_pop,
+  input wire                         i_push,
+  input wire        [DATA_WIDTH-1:0] i_data,
+  input wire                         i_pop,
 
-  output                        o_valid,
-  output       [DATA_WIDTH-1:0] o_data,
+  output wire                        o_valid,
+  output wire       [DATA_WIDTH-1:0] o_data,
 
-  output [WORD_COUNT_WIDTH-1:0] o_word_count,
-  output                        o_halffull,
-  output                        o_empty,
-  output                        o_full,
-  output                        o_push_error,
-  output                        o_pop_error
+  output wire [WORD_COUNT_WIDTH-1:0] o_word_count,
+  output wire                        o_halffull,
+  output wire                        o_empty,
+  output wire                        o_full,
+  output wire                        o_push_error,
+  output wire                        o_pop_error
 );
 
   generate
