@@ -31,7 +31,7 @@ file_v.write("`default_nettype none\n"                               +
              "  localparam MASTER_OUT_W  = %d,\n" % (max_bits)       +
              "  localparam MASTER_ADDR_W = $clog2(MAX_FFT_LEN)-1\n"  +
              ") (\n" +
-             "  input wire                      mclk,\n"   +
+             "  input wire                      clk,\n"   +
              "  input wire         [ADDR_W-1:0] i_addr,\n" +
              "  output reg signed   [OUT_W-1:0] o_cos,\n"  +
              "  output reg signed   [OUT_W-1:0] o_sin,\n"   +
@@ -83,12 +83,12 @@ file_v.write("  reg               addr_sign_d1;\n"                              
              "  reg  [ADDR_W-2:0] translated_addr;\n"                                     +
              "  wire addr_sign  = i_addr[ADDR_W-1];\n"                                    +
              "  wire is_n_4     = addr_sign & (translated_addr == 0);\n\n"                +
-             "  always @(posedge mclk) addr_sign_d1    <= addr_sign;\n"                   +
-             "  always @(posedge mclk) translated_addr <= addr_sign ? $unsigned(-i_addr[ADDR_W-2:0]) : i_addr[ADDR_W-2:0];\n\n" +
+             "  always @(posedge clk) addr_sign_d1    <= addr_sign;\n"                   +
+             "  always @(posedge clk) translated_addr <= addr_sign ? $unsigned(-i_addr[ADDR_W-2:0]) : i_addr[ADDR_W-2:0];\n\n" +
              "  wire signed [OUT_W-1:0] cos_e1 = is_n_4 ? $signed(COS_N_4) : addr_sign_d1 ? -cos_rom[translated_addr] : cos_rom[translated_addr];\n" +
              "  wire signed [OUT_W-1:0] sin_e1 = is_n_4 ? $signed(SIN_N_4) : sin_rom[translated_addr];\n\n" +
-             "  always @(posedge mclk) o_cos <= cos_e1;\n"
-             "  always @(posedge mclk) o_sin <= sin_e1;\n"
-             "  always @(posedge mclk) o_sum <= cos_e1 + sin_e1;\n\n")
+             "  always @(posedge clk) o_cos <= cos_e1;\n"
+             "  always @(posedge clk) o_sin <= sin_e1;\n"
+             "  always @(posedge clk) o_sum <= cos_e1 + sin_e1;\n\n")
 
-file_v.write("endmodule")
+file_v.write("endmodule\n")

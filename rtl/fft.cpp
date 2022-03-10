@@ -87,7 +87,7 @@ static void tick(int tickcount, Vfft *tb,
     if (tfp != nullptr)
         tfp->dump(tickcount*10-0.0001);
     tb->eval();
-    tb->mclk = 1;
+    tb->clk = 1;
     tb->eval();
     // log at the posedge
     if (tfp != nullptr)
@@ -98,7 +98,7 @@ static void tick(int tickcount, Vfft *tb,
         tfp->dump(tickcount*10 + 4.999);
         tfp->flush();
     }
-    tb->mclk  = 0;
+    tb->clk  = 0;
     tb->eval();
     // log after negedge
     if (tfp != nullptr)
@@ -222,7 +222,7 @@ int main(int argc, char**argv)
 
     double T = 7.0;
 
-    tb->mclk    = 0;
+    tb->clk    = 0;
     tb->i_init  = 1;
     tb->i_I     = dst_in(rng);
     tb->i_Q     = dst_in(rng);

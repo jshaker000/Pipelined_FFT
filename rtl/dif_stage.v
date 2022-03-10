@@ -13,7 +13,7 @@ module dif_stage
   parameter IS_IFFT      = 1'b0,
   localparam BUFF_DEPTH  = 2**(TOTAL_STAGES-STAGE-1)
 ) (
-  input wire                     mclk,
+  input wire                     clk,
   input wire                     i_init,
   input wire                     i_vld,
   input wire  signed  [IN_W-1:0] i_I,
@@ -32,15 +32,15 @@ module dif_stage
 
   reg filling_ibuff;
   initial filling_ibuff = 1'b1;
-  always @(posedge mclk) filling_ibuff <= i_init ? 1'b1 : ibuff_full ? 1'b0 : ibuff_empty ? 1'b1 : filling_ibuff;
+  always @(posedge clk) filling_ibuff <= i_init ? 1'b1 : ibuff_full ? 1'b0 : ibuff_empty ? 1'b1 : filling_ibuff;
   wire push_ibuff  = ~i_init & i_vld & ( filling_ibuff | ibuff_empty) & ~ibuff_full;
   wire pop_ibuff   = ~i_init & i_vld & (~filling_ibuff | ibuff_full)  & ~ibuff_empty;
 
   reg  [IN_W-1:0] iI_d1;
   reg  [IN_W-1:0] iQ_d1;
 
-  always @(posedge mclk) iI_d1 <= pop_ibuff ? i_I : iI_d1;
-  always @(posedge mclk) iQ_d1 <= pop_ibuff ? i_Q : iQ_d1;
+  always @(posedge clk) iI_d1 <= pop_ibuff ? i_I : iI_d1;
+  always @(posedge clk) iQ_d1 <= pop_ibuff ? i_Q : iQ_d1;
 
 /* verilator lint_off PINCONNECTEMPTY */
   fifo #(
@@ -48,7 +48,7 @@ module dif_stage
     .FIFO_DEPTH(BUFF_DEPTH),
     .POP_VALID (1'b1)
   ) inst_in_buff(
-    .i_clk  (mclk),
+    .i_clk  (clk),
     .i_rst  (i_init),
     .i_data ({$unsigned(i_I), $unsigned(i_Q)}),
     .i_push (push_ibuff),
@@ -78,7 +78,7 @@ module dif_stage
     .TOTAL_STAGES(TOTAL_STAGES),
     .IS_IFFT     (IS_IFFT)
   ) inst_dif_butt(
-    .mclk  (mclk),
+    .clk  (clk),
     .i_init(i_init),
     .i_vld (ibuff_vld),
     .i_LI  ($signed(inbuff_oI)),
@@ -101,7 +101,7 @@ module dif_stage
 
   reg filling_obuff;
   initial filling_obuff = 1'b1;
-  always @(posedge mclk) filling_obuff <= i_init ? 1'b1 : obuff_full ? 1'b0 : obuff_empty ? 1'b1 : filling_obuff;
+  always @(posedge clk) filling_obuff <= i_init ? 1'b1 : obuff_full ? 1'b0 : obuff_empty ? 1'b1 : filling_obuff;
 
   wire push_obuff  = ~i_init &  butt_vld & ( filling_obuff | obuff_empty) & ~obuff_full;
   wire pop_obuff   = ~i_init & ~butt_vld & (~filling_obuff | obuff_full)  & ~obuff_empty;
@@ -110,9 +110,9 @@ module dif_stage
   reg [OUT_W-1:0] butt_oLI_d1;
   reg [OUT_W-1:0] butt_oLQ_d1;
 
-  always @(posedge mclk) butt_vld_d1 <= push_obuff & butt_vld;
-  always @(posedge mclk) butt_oLI_d1 <= push_obuff & butt_vld ? butt_oLI : butt_oLI_d1;
-  always @(posedge mclk) butt_oLQ_d1 <= push_obuff & butt_vld ? butt_oLQ : butt_oLQ_d1;
+  always @(posedge clk) butt_vld_d1 <= push_obuff & butt_vld;
+  always @(posedge clk) butt_oLI_d1 <= push_obuff & butt_vld ? butt_oLI : butt_oLI_d1;
+  always @(posedge clk) butt_oLQ_d1 <= push_obuff & butt_vld ? butt_oLQ : butt_oLQ_d1;
 
 /* verilator lint_off PINCONNECTEMPTY */
   fifo #(
@@ -120,7 +120,7 @@ module dif_stage
     .FIFO_DEPTH(BUFF_DEPTH),
     .POP_VALID (1'b1)
   ) inst_out_buff(
-    .i_clk  (mclk),
+    .i_clk  (clk),
     .i_rst  (i_init),
     .i_data ({$unsigned(butt_oRI), $unsigned(butt_oRQ)}),
     .i_push (push_obuff),

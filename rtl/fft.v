@@ -7,7 +7,7 @@ module fft #(
   localparam INT_W   =  IN_W + STAGES + E_W + 1, // Also add one sign extend to the left (otherwise it will clip if the mag IQ > 2^(IW-1) rather than if the value is)
   parameter  OUT_W   =  IN_W + STAGES            // Out width is nominally IN_W + Stages (need to make rounding down work ...)
 ) (
-  input wire                     mclk,
+  input wire                     clk,
   input wire                     i_init,
   input wire                     i_vld,
   input wire signed   [IN_W-1:0] i_I,
@@ -21,14 +21,14 @@ module fft #(
 
   `ifdef verilator
     integer errors = 0;
-    always @(posedge mclk) begin
+    always @(posedge clk) begin
       if (errors >= 4) $fatal;
     end
   `endif
 
   reg [3:0] por;
   initial por = 4'h0;
-  always @(posedge mclk) por <= por != 4'h0 ? por - 4'h1 : 4'b0;
+  always @(posedge clk) por <= por != 4'h0 ? por - 4'h1 : 4'b0;
 
   wire init = i_init | por != 4'h0;
 
@@ -56,7 +56,7 @@ module fft #(
         .TOTAL_STAGES(STAGES),
         .IS_IFFT     (1'b0)
       ) inst_dif_stage (
-        .mclk  (mclk),
+        .clk  (clk),
         .i_init(init),
         .i_vld (fft_ivld[i]),
         .i_I   ($signed(fft_iI[i][iw-1:0])),
@@ -67,7 +67,7 @@ module fft #(
         .o_clip_strb(butt_clip_strb[i])
       );
       `ifdef verilator
-        always @(posedge mclk) begin
+        always @(posedge clk) begin
           assert(init ? 1'b1 : ~butt_clip_strb[i]) else begin
             $display("FFT: DIF BUTT STG: %0d clipped!\n", i);
             errors <= errors + 1;
@@ -87,7 +87,7 @@ module fft #(
 /* verilator lint_off PINCONNECTEMPTY */
   round #(.IN_W(INT_W-1), .OUT_W(OUT_W))
   inst_rndoI(
-    .mclk(mclk),
+    .clk(clk),
     .i_init(init),
     .i_data(toRoundI),
     .i_vld (fft_ivld[STAGES]),
@@ -96,7 +96,7 @@ module fft #(
   );
   round #(.IN_W(INT_W-1), .OUT_W(OUT_W))
   inst_rndoQ(
-    .mclk(mclk),
+    .clk(clk),
     .i_init(init),
     .i_data(toRoundQ),
     .i_vld (fft_ivld[STAGES]),
@@ -113,7 +113,7 @@ module fft #(
     .DATA_W(2*OUT_W),
     .DEPTH (FFT_LEN)
   ) inst_bit_dereverse (
-    .mclk  (mclk),
+    .clk  (clk),
     .i_init(init),
     .i_vld (bit_dereverse_iVld),
     .i_data({$unsigned(bit_dereverse_iI), $unsigned(bit_dereverse_iQ)}),
