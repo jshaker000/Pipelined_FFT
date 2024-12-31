@@ -187,7 +187,7 @@ int main(int argc, char**argv)
     std::uniform_real_distribution<double> dst_T (1, fft_len);
 
     const std::int64_t stages  = log2c(fft_len);
-    const std::int64_t max_err = stages <= 2 ? 0 : 8*stages; // is this right?
+    const std::int64_t max_err = std::pow(2, ow - iw); // is this right?
 
     fftw_complex* i_data = static_cast<fftw_complex*>(fftw_malloc(fft_len * sizeof(*i_data)));
     fftw_complex* o_data = static_cast<fftw_complex*>(fftw_malloc(fft_len * sizeof(*o_data)));
@@ -195,12 +195,13 @@ int main(int argc, char**argv)
 
     std::cerr << "FFT Test"                                                       << "\n"
               << "Config:"                                                        << "\n"
-              << "\tC++ Seed:          " << std::hex << std::uppercase << seed    << "\n" << std::dec
-              << "\tFFT_Len:           " << fft_len                               << "\n"
-              << "\tFFT_Stages:        " << stages                                << "\n"
-              << "\tIn_Bits:           " << iw                                    << "\n"
-              << "\tOut_Bits:          " << ow                                    << "\n"
-              << "\tMax Allowed Error: " << max_err                               << std::endl;
+              << "\tC++ Seed:           " << std::hex << std::uppercase << seed    << "\n" << std::dec
+              << "\tFFT_Len:            " << fft_len                               << "\n"
+              << "\tFFT_Stages:         " << stages                                << "\n"
+              << "\tIn_Bits:            " << iw                                    << "\n"
+              << "\tOut_Bits:           " << ow                                    << "\n"
+              << "\tOut Bits - In Bits: " << ow - iw                               << "\n"
+              << "\tMax Allowed Error:  " << max_err                               << std::endl;
 
     std::deque<std::pair<double,double>> results;
 
@@ -297,9 +298,9 @@ int main(int argc, char**argv)
             max_error             = std::max(err, max_error);
             if (err > max_err)
             {
-                std::cerr << "Error checking outs! fft: " << std::setw(5) << fft_out << ", FFT_BIN: " << std::setw(5) << bin_out << "\n"
-                          << "\tExpected (I,Q): (" << std::setw(10) << tmp[0]  << "," << std::setw(10) << tmp[1] << ")"          << "\n"
-                          << "\tOut      (I,Q): (" << std::setw(10) << oI      << "," << std::setw(10) << oQ     << ")"          << std::endl;
+                std::cerr << "Error checking outs! fft index: " << std::setw(5) << fft_out << ", FFT_BIN: " << std::setw(5) << bin_out << "\n"
+                          << "\tExpected (I,Q): (" << std::fixed << std::setprecision(2) << std::setw(13) << tmp[0]           << "," << std::fixed << std::setprecision(2) << std::setw(13) << tmp[1]      << ")" << "\n"
+                          << "\tOut      (I,Q): ("                                       << std::setw(10) << oI     << "   "  << ","                                       << std::setw(10) << oQ << "   " << ")" << std::endl;
                 errors++;
             }
             if (bin_out == 0)
@@ -332,11 +333,11 @@ int main(int argc, char**argv)
     if (errors != 0 || clip_errors != 0)
     {
         std::cerr << errors << " data error" << (errors != 1 ? "s" : "") << "!" << "\n"
-                  << "Max error: " << max_error << "\n"
+                  << "Max error: " << max_error << " (" << std::fixed << std::setprecision(2) << std::log2(max_error) << " bits) out of " << ow << " output bits, " << iw << " input bits\n"
                   << clip_errors << " clip error" << (clip_errors != 1 ? "s" : "") << "!" << std::endl;
         return -1;
     }
-    std::cerr << "Max error was: " << max_error << ", which is acceptable roundoff" << "\n"
+    std::cerr << "Max error was: " << max_error << " (" << std::fixed << std::setprecision(2) << std::log2(max_error) << " bits) out of " << ow << " output bits, " << iw << " input bits, which is acceptable\n"
               << "PASS!" << std::endl;
     return 0;
 }

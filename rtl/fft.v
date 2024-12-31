@@ -2,7 +2,7 @@
 module fft #(
   parameter  IN_W    =  20,                      // In Width, Bits
   parameter  FFT_LEN =  256,                     // Len of FFT (must be Pow2)
-  parameter  E_W     =  4,                       // Extra bits used for internal calcs to reduce rounding errors, more needed as FFT_STAGES increases
+  parameter  E_W     =  6,                       // Extra bits used for internal calcs to reduce rounding errors, more needed as FFT_STAGES increases
   localparam STAGES  =  $clog2(FFT_LEN),
   localparam INT_W   =  IN_W + STAGES + E_W + 1, // Also add one sign extend to the left (otherwise it will clip if the mag IQ > 2^(IW-1) rather than if the value is)
   parameter  OUT_W   =  IN_W + STAGES            // Out width is nominally IN_W + Stages (need to make rounding down work ...)
@@ -47,7 +47,7 @@ module fft #(
     for(i=0; i < STAGES; i=i+1) begin: fft_stage
       localparam iw = IN_W + E_W + 1 + i;
       localparam ow = IN_W + E_W + 1 + i + 1;
-      localparam tw = i >= STAGES-2 ? 0 : iw + 4;
+      localparam tw = i >= STAGES-2 ? 0 : iw + E_W;
       dif_stage #(
         .IN_W        (iw),
         .OUT_W       (ow),
