@@ -3,6 +3,8 @@
 import math
 from fractions import Fraction
 
+# Note that perhaps we should be using mpmath for higher precision rather than using the 'math' routines
+
 def bank_round(n):
    nr = int(round(n*10))
    if (nr % 10 == 5):
